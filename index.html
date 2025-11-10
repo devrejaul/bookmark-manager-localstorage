@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bookmark Manager</title>
+  <link rel="stylesheet" href="style.css" />
+              
+    <!-- font-awesome-cdn link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/brands.min.css" integrity="sha512-WxpJXPm/Is1a/dzEdhdaoajpgizHQimaLGL/QqUIAjIihlQqlPQb1V9vkGs9+VzXD7rgI6O+UsSKl4u5K36Ydw==" crossorigin="anonymous" referrerpolicy="no-referrer" />   
+<body data-theme="light">
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside>
+      <div class="brand">
+        <strong><i class="fa-regular fa-bookmark"></i> Bookmark Manager</strong>
+      </div>
+
+      <div class="side-nav">
+        <button id="btnHome" class="active"><i class="fa-solid fa-house"></i> Home</button>
+        <button id="btnArchived"><i class="fa-solid fa-box-archive"></i> Archived</button>
+      </div>
+
+      <div class="tags-wrap">
+        <div class="tags-head">TAGS</div>
+        <div id="tagList" class="tag-list">
+          <div class="muted">No tags</div>
+        </div>
+        <button id="resetTags" class="btn full">Reset filters</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <section class="main">
+      <!-- Top header: search + actions -->
+      <div class="topbar">
+        <div class="search">
+          <i class="fa fa-search"></i>
+          <input id="search" type="text" placeholder="Search by title..." />
+        </div>
+
+        <div class="actions">
+          <button id="addBtn" class="btn btn-primary">+ Add Bookmark</button>
+
+          <!-- Profile dropdown -->
+          <div class="dropdown">
+            <!-- when logged out -->
+            <button id="openLogin" class="btn">Login</button>
+
+            <!-- when logged in -->
+            <button id="avatarBtn" class="avatar hidden" title="Profile">
+              <img id="avatarImg" alt="me" />
+            </button>
+
+            <div id="profileMenu" class="menu">
+              <div class="profile-row">
+                <img id="pPhoto" class="avatar-lg" alt="me">
+                <div class="profile-info">
+                  <div id="pName" class="name">Guest</div>
+                  <div id="pEmail" class="email">-</div>
+                </div>
+              </div>
+
+              <div class="menu-row">
+                <div class="menu-label"><i class="fa-regular fa-circle-half-stroke"></i> Theme</div>
+                <div class="switch">
+                  <input id="themeSwitch" type="checkbox" />
+                  <span class="sun">☀️</span><span class="moon">🌙</span>
+                </div>
+              </div>
+
+              <button id="logoutBtn" class="menu-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section header: title + sort -->
+      <div class="section-head">
+        <h2>All bookmarks</h2>
+
+        <div class="sort-area">
+          <button id="sortToggle" class="btn"><i class="fa-solid fa-arrow-down-wide-short"></i> Sort by</button>
+          <div id="sortMenu" class="sort-menu hidden">
+            <div class="sort-item active" data-sort="recently_added">Recently added</div>
+            <div class="sort-item" data-sort="recently_visited">Recently visited</div>
+            <div class="sort-item" data-sort="most_visited">Most visited</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="count" class="muted" style="margin-left: 18px;">0 items</div>
+      <div id="grid" class="grid"></div>
+    </section>
+  </div>
+
+  <!-- Bookmark Modal -->
+  <div id="modalRoot" class="hidden"></div>
+
+  <template id="bookmarkTpl">
+    <div class="backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <form id="bookmarkForm">
+          <div class="modal-head">
+            <strong id="modalTitle">Add Bookmark</strong>
+            <button type="button" id="closeModal" class="btn">✖</button>
+          </div>
+
+          <label>Title</label>
+          <input id="bmTitle" class="input" placeholder="Title (optional)" />
+
+          <label>URL</label>
+          <input id="bmUrl" class="input" placeholder="https://example.com" required />
+
+          <label>Description</label>
+          <textarea id="bmDesc" class="input" rows="3" placeholder="Short description"></textarea>
+
+          <label>Tags (comma separated)</label>
+          <input id="bmTags" class="input" placeholder="web, reference" />
+
+          <div class="right">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </template>
+
+  <!-- Auth Modal -->
+  <template id="authTpl">
+    <div class="backdrop">
+      <div class="modal auth" role="dialog" aria-modal="true">
+        <form id="authForm">
+          <h3 id="authTitle">Login</h3>
+          <div id="rowName" class="row">
+            <label>Name</label>
+            <input id="aName" class="input" placeholder="Your name" />
+          </div>
+          <div class="row">
+            <label>Email</label>
+            <input id="aEmail" class="input" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="row">
+            <label>Password</label>
+            <input id="aPass" class="input" type="password" placeholder="••••••••" required />
+          </div>
+          <div class="row">
+            <label>Photo URL (optional)</label>
+            <input id="aPhoto" class="input" placeholder="https://..." />
+          </div>
+
+          <div class="auth-actions">
+            <button type="button" id="switchAuth" class="btn">Create new account</button>
+            <div style="display:flex;gap:8px">
+              <button type="button" id="cancelAuth" class="btn">Cancel</button>
+              <button id="submitAuth" class="btn btn-primary">Login</button>
+            </div>
+          </div>
+
+          <p class="muted small">Demo only — data stays in your browser.</p>
+        </form>
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
